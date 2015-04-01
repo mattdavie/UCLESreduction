@@ -7,6 +7,10 @@ import pickle
 from astropy.time import Time 
 from datetime import datetime
 
+#to run this stuff
+#reducebysubfolder(os.getcwd())
+#should get it going
+
 debug=False
 figures=False
 	
@@ -29,7 +33,7 @@ def save_reduced_data(input_file,sp,unc,wave=None):
 		wave=np.arange(sp.shape[0])
 	data=[[]]*(sp.shape[1]+1)
 	for i in np.arange(sp.shape[1]):
-		data=np.vstack((sp[:,i],unc[:,i],wave))
+		data=np.vstack((sp[:,i],unc[:,i],wave[i,:][::-1]))
 		if i==0:
 			head['ORDER']=((i+1),'Order number')
 			pyfits.writeto(os.path.splitext(input_file)[0]+'_reduced.fits', data,head, clobber=True)
@@ -39,7 +43,7 @@ def save_reduced_data(input_file,sp,unc,wave=None):
 	#save file as original file + _reduced
 	#ie. if aug008811.fits was the file - this becomes
 	#aug008811_reduced.npy
-	
+	hdulist.close()
 
 #string checking for Identify image method
 def Anymatching(a,b):
@@ -490,7 +494,8 @@ def reducebysubfolder(filepath):
 					print 'Processing %s'%input_file
 					try:
 						sp,unc=extract_arc(input_file=input_file)
-						save_reduced_data(input_file,sp,unc)
+						wave=arc_wavelength_solution(hdu)
+						save_reduced_data(input_file,sp,unc,wave)
 					except: print 'Extraction FAILED for %s' %input_file
 			print'*** Reducing Iodine Flats ***'
 			for j in range(len( filedata['REDUCEAS'] )):
